@@ -12,7 +12,7 @@ export default function Layout() {
 		Rajdhani_700Bold,
 		Rajdhani_400Regular, 
 		Rajdhani_500Medium,
-		DigitalBold: require('../../assets/fonts/digital/FontsFree-Net-DS-DIGIB-2.ttf')
+		DigitalBold: require('../../assets/fonts/FontsFree-Net-DS-DIGIB-2.ttf')
 	});
 
 	if (!fontsLoaded) {

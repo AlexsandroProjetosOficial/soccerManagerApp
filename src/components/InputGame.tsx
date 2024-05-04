@@ -13,13 +13,13 @@ const InputGame = forwardRef<React.ElementRef<typeof TextInput>, InputProps>(
 	({ children, color, ...props }, ref) => {
 
 		return (
-			<View className={clsx('flex w-1/2 rounded-lg h-14 justify-center items-center align-middle', {
+			<View className={clsx('flex w-1/2 rounded-lg h-16', {
 				'border-2 border-yellow-100': color === 'yellow',
 				'border-2 border-red-100': color === 'red',
 				'border-2 border-green-100': color === 'green'
 			})}>
 				<TextInput
-					className={clsx("font-digitalBold text-3xl", {
+					className={clsx("font-digitalBold text-5xl text-center w-full h-full", {
 						'text-green-100': color === 'green',
 						'text-yellow-100': color === 'yellow',
 						'text-red-100': color === 'red'

@@ -39,7 +39,7 @@
 			[
 				"expo-font",
 				{
-					"fonts": ["./assets/fonts/digital/digital-7.regular.ttf", "./assets/fonts/digital/FontsFree-Net-DS-DIGIB-2.ttf"]
+					"fonts": ["./assets/fonts/FontsFree-Net-DS-DIGIB-2.ttf"]
 				}
 			]
     ],
