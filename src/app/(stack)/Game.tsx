@@ -2,15 +2,12 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from "../../components/Button";
-import clsx from 'clsx';
 import { useRouter } from "expo-router";
 import YellowCard from '@/assets/yellowCard.svg'
 import RedCard from '@/assets/redCard.svg'
 import { MaterialIcons } from "@expo/vector-icons";
 import { colors } from "../../styles/colors";
-import { InputGroup } from "../../components/InputGroup";
 import ModalGame from "../../components/ModalGame";
-import { InputGame } from "../../components/InputGame";
 import Cards from "../../components/Cards";
 import IncreasedTime from "../../components/IncreasedTime";
 import PlayerSubstituitions from "../../components/PlayerSubstituitions";
@@ -288,11 +285,11 @@ export default function Game() {
 				) : ''}
 			</View>
 			<View className='w-full flex-row items-center justify-between mt-2 gap-4 p-2'>
-				<Image className="w-16 h-16 rounded-lg" source={{ uri: gameSelected?.home.avatar }} />
+				<Image className="w-20 h-20 rounded-lg" source={{ uri: gameSelected?.home.avatar }} />
 				<Text className="text-gray-100 font-digitalBold text-5xl">{gameSelected?.home.score}</Text>
 				<Text className="text-yellow-100 font-digitalBold text-3xl">X</Text>
 				<Text className="text-gray-100 font-digitalBold text-5xl">{gameSelected?.away.score}</Text>
-				<Image className="w-16 h-16 rounded-lg" source={{ uri: gameSelected?.away.avatar }} />
+				<Image className="w-20 h-20 rounded-lg" source={{ uri: gameSelected?.away.avatar }} />
 			</View>
 			<View className="w-full flex-row items-center justify-between mt-5 gap-4 p-2">
 				<TouchableOpacity onPress={() => { setOpen(true); setColor('yellow'); setType('cards'); setResult(stopwatch); }}>

@@ -3,7 +3,6 @@ import { Category, CategoryItem } from "@/components/Category";
 import { useMemo, useState } from "react";
 import Games from "@/components/Games";
 import React from "react";
-import Loading from "@/components/Loading";
 
 export default function Home() {
 	const [value, setValue] = useState('professional');

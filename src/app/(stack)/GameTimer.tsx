@@ -1,6 +1,5 @@
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { useState } from "react";
-import OfficialTimer from "@/components/OfficialTimer";
 import { useLocalSearchParams } from "expo-router";
 import moment from 'moment';
 import React from 'react';
@@ -11,7 +10,7 @@ import clsx from 'clsx';
 import { useRouter } from "expo-router";
 
 interface iHandleRegisterTimer {
-	gameId: string | string[];
+	gameId: string | string[] | undefined;
 	half: 'first' | 'second';
 	team: 'referee' | 'home' | 'away';
 }
@@ -48,6 +47,7 @@ export default function GameTimer() {
 
 		setTimeRegistered(timeRegisteredCurrent);
 	}
+	
 	return (
 		<View className='w-full bg-green-200 flex-1 px-7'>
 			<View className={clsx('w-full flex-col mt-1', {
@@ -86,7 +86,7 @@ export default function GameTimer() {
 									label='Iniciar 1º tempo'
 									bgColor='red'
 									disabled={(isFirstHalfCompleted || (!timeRegistered.referee.first || !timeRegistered.home.first || !timeRegistered.away.first)) ? true : false}
-									onPress={() => router.push({ pathname: "/Game", params: { game: game, half: 'first' } })}
+									onPress={() => router.push({ pathname: "/Game", params: { game: game, half: 'firstHalf' } })}
 								/>
 							</View>
 						</View>
@@ -129,7 +129,7 @@ export default function GameTimer() {
 									label='Iniciar 2º tempo'
 									bgColor='red'
 									disabled={(isSecondHalfCompleted || (!timeRegistered.referee.second || !timeRegistered.home.second || !timeRegistered.away.second)) ? true : false}
-									onPress={() => console.log('iniciar')}
+									onPress={() => router.push({ pathname: "/Game", params: { game: game, half: 'secondHalf' } })}
 								/>
 							</View>
 						</View>

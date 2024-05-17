@@ -1,7 +1,6 @@
 import { Stack } from "expo-router";
 import Header from "../../components/Header";
 import { colors } from "../../styles/colors";
-import { fonts } from "../../styles/fonts";
 import HeaderPages from "../../components/HeaderPages";
 import React from "react";
 import HeaderPagesGame from "../../components/HeaderPagesGame";
