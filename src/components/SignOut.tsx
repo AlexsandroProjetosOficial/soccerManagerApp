@@ -3,6 +3,7 @@ import { Button } from "./Button";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import React from "react";
+import { useAuth } from "../context/AuthContext";
 
 interface ISignOutProps {
 	setOpen: (key: boolean) => void;
@@ -11,17 +12,7 @@ interface ISignOutProps {
 export default function SignOut({ setOpen }: ISignOutProps) {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const router = useRouter()
-
-	const handleSignOut = async () => {
-		setIsLoading(oldState => !oldState);
-
-		setTimeout(() => {
-			setIsLoading(oldState => !oldState);
-
-			router.navigate('/')
-		}, 1 * 5000);
-	}
+	const { signOut } = useAuth();
 
 	return (
 		<View className="w-full p-7 flex-col items-center h-50 bg-green-300">
@@ -35,7 +26,7 @@ export default function SignOut({ setOpen }: ISignOutProps) {
 			</View>
 			<View className="flex flex-1 flex-row gap-4 mt-10 mb-6">
 				<Button label='Não' bgColor='green' onPress={() => setOpen(false)} />
-				<Button label='Sim' bgColor='red' onPress={handleSignOut} isPressed={isLoading} />
+				<Button label='Sim' bgColor='red' onPress={signOut} isPressed={isLoading} />
 			</View>
 		</View>
 	)

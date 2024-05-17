@@ -3,34 +3,14 @@ import { View } from 'react-native';
 import { InputGroup } from '@/components/InputGroup';
 import { Button } from '@/components/Button';
 import { SetStateAction, useState } from 'react';
-import { useToast } from '@/components/Toast';
-import { useRouter } from 'expo-router';
 import React from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Login() {
-	const [email, setEmail] = useState<string>('');
-	const [password, setPassword] = useState<string>('');
-	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [email, setEmail] = useState<string>('alexsandrofpf2011@gmail.com');
+	const [password, setPassword] = useState<string>('Stx33608500++');
 
-	const { toast } = useToast();
-	const router = useRouter();
-
-	const handler = async () => {
-		router.push('/Home')
-		// if (email === '' || password === '') return toast('Preencha todos os campos.', 'warning', 4000, 'top');
-
-		// if (email === 'alexsandrofpf2011@gmail.com' && password === 'Stx33608500++') {
-		// 	setIsLoading(oldState => !oldState);
-
-		// 	setTimeout(() => {
-		// 		setIsLoading(oldState => !oldState);
-		// 		toast('Login realizado com sucesso.', 'success', 4000, 'top');
-		// 		router.push('/Home')
-		// 	}, 1 * 5000);
-		// } else {
-		// 	toast('Usuario ou senha incorretos.', 'error', 4000, 'top');
-		// }
-	}
+	const { signIn, isLoading } = useAuth();
 
 	const clear = () => {
 		setEmail('');
@@ -60,7 +40,7 @@ export default function Login() {
 				/>
 				<View className='w-full flex-row gap-4 justify-center mt-2'>
 					<Button label='Limpar' bgColor='red' onPress={clear} />
-					<Button label='Entrar' bgColor='green' onPress={handler} isPressed={isLoading} />
+					<Button label='Entrar' bgColor='green' onPress={() => signIn(email, password)} isPressed={isLoading} />
 				</View>
 			</View>
 		</View>

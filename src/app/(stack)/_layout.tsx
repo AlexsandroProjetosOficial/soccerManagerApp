@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import Header from "../../components/Header";
 import { colors } from "../../styles/colors";
 import HeaderPages from "../../components/HeaderPages";
@@ -7,11 +7,7 @@ import HeaderPagesGame from "../../components/HeaderPagesGame";
 
 export default function StackLayout() {
 	return (
-		<Stack
-			// screenOptions={{
-			// 	headerShown: false,
-			// }}
-		>
+		<Stack>
 			<Stack.Screen
 				name="index"
 				options={{

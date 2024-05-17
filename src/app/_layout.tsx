@@ -6,14 +6,17 @@ import { useFonts, Rajdhani_700Bold, Rajdhani_400Regular, Rajdhani_500Medium } f
 import Loading from '@/components/Loading';
 import { ToastProvider } from '@/components/Toast';
 import React from 'react';
+import { AuthContextProvider } from '../context/AuthContext';
 
 export default function Layout() {
 	const [fontsLoaded] = useFonts({
 		Rajdhani_700Bold,
-		Rajdhani_400Regular, 
+		Rajdhani_400Regular,
 		Rajdhani_500Medium,
 		DigitalBold: require('../../assets/fonts/FontsFree-Net-DS-DIGIB-2.ttf')
 	});
+
+	console.log('fontsLoaded', fontsLoaded);
 
 	if (!fontsLoaded) {
 		return <Loading />
@@ -21,10 +24,12 @@ export default function Layout() {
 
 	return (
 		<ToastProvider position='top'>
-			<GestureHandlerRootView style={{ flex: 1 }}>
-				<StatusBar style='light' backgroundColor='#1D521F'/>
-				<Slot />
-			</GestureHandlerRootView>
+			<AuthContextProvider>
+				<GestureHandlerRootView style={{ flex: 1 }}>
+					<StatusBar style='light' backgroundColor='#1D521F' />
+					<Slot />
+				</GestureHandlerRootView>
+			</AuthContextProvider>
 		</ToastProvider>
 	)
 }

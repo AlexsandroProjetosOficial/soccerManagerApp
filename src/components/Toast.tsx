@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { Animated, Text, View } from 'react-native';
 
 const toastVariants = {

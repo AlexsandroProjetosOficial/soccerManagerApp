@@ -22,7 +22,10 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1D521F"
-      }
+      },
+			"userInterfaceStyle": "automatic",
+      "package": "com.soccermanager.app",
+      "versionCode": 1
     },
 		"androidStatusBar": {
       "translucent": true,
@@ -41,7 +44,13 @@
 				{
 					"fonts": ["./assets/fonts/FontsFree-Net-DS-DIGIB-2.ttf"]
 				}
-			]
+			],
+			[
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Permitir $(PRODUCT_NAME) a accessar biometria para salvar credenciais"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
