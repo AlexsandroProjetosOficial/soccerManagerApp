@@ -1,73 +1,120 @@
 import { ScrollView, View } from "react-native";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import OfficialTimer from "@/components/OfficialTimer";
 import { useLocalSearchParams } from "expo-router";
-import moment from 'moment';
 import React from 'react';
+import { api } from "../../service/api";
+import { useToast } from "../../components/Toast";
+import Loading from "../../components/Loading";
 
-interface IReferee {
-	refereeId: string;
+interface IOfficials {
+	id: string;
 	isTime: boolean;
-	avatar: string;
+	avatar: string | null;
 	name: string;
-	phoneNumber: string;
+	phone: string;
 	position: string;
 }
 
 export default function Timer() {
-	const [referees, setReferees] = useState<IReferee[]>([
-		{
-			refereeId: 'e658a570-6fc2-434b-8311-713742fb11e8',
-			isTime: false,
-			avatar: "https://github.com/AlexsandroProjetosOficial.png",
-			name: "Alexsandro Euzebio da Silva",
-			phoneNumber: "5541987383752",
-			position: "Arbitro"
-		},
-		{
-			refereeId: 'bdcd82d4-f6bf-4412-bd2e-1371c89b1af8',
-			isTime: false,
-			avatar: "https://github.com/AlexsandroProjetosOficial.png",
-			name: "Alexsandro Euzebio da Silva",
-			phoneNumber: "5541987383752",
-			position: "Arbitro Assistente"
-		},
-	])
+	const [officials, setOfficials] = useState<IOfficials[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingRegisterTime, setIsLoadingRegisterTime] = useState(false);
+	const [matchOfficialSelected, setMatchOfficialSelected] = useState('');
+
 	const params = useLocalSearchParams();
 	const { game } = params;
 
-	console.log('game', game);
+	const { toast } = useToast();
 
-	const handleRegisterTimer = async (refereeId: string) => {
-		const currentTimer = moment().format('YYYY-MM-DDTHH:mm:ss');
-		const refereesTmp = [...referees];
+	const handleRegisterTimer = async (matchOfficial: string) => {
+		try {
+			setMatchOfficialSelected(matchOfficial);
+			setIsLoadingRegisterTime(oldState => !oldState);
 
-		console.log(currentTimer);
-
-		refereesTmp.map(referee => {
-			if (referee.refereeId === refereeId) {
-				referee.isTime = true
+			const data = {
+				matchOfficial: matchOfficial,
+				game: game,
 			}
-		});
 
-		setReferees(refereesTmp);
+			const {
+				status,
+				data: {
+					error,
+					message,
+					data: {
+						officials
+					}
+				}
+			} = await api.patch('/game/officials', data);
+
+			if (status === 201 && !error) {
+				setOfficials(officials);
+				toast(message, 'success', 4000, 'top');
+
+				setIsLoadingRegisterTime(oldState => !oldState);
+			}
+
+			setMatchOfficialSelected('');
+		} catch (error) {
+			setMatchOfficialSelected('');
+			setIsLoadingRegisterTime(oldState => !oldState);
+			toast('Não foi possível registrar o horário.', 'error', 4000, 'top');
+		}
 	}
+
+	const getOfficials = useCallback(async () => {
+		try {
+			setIsLoading(oldState => !oldState);
+
+			const {
+				status,
+				data: {
+					error,
+					message,
+					data: {
+						officials
+					}
+				}
+			} = await api.get(`/game/officials?game=${game}`);
+
+			if (status === 200 && !error) {
+				setOfficials(officials);
+				toast(message, 'success', 4000, 'top');
+
+				setIsLoading(oldState => !oldState);
+			}
+		} catch (error) {
+			toast('Oficiais da partida não encontrado.', 'error', 4000, 'top');
+		}
+	}, [game]);
+
+	useEffect(() => {
+		getOfficials();
+	}, [getOfficials])
 
 	return (
 		<View className='w-full bg-green-200 flex-1 px-7'>
-			<ScrollView>
-				{referees.map(({ refereeId, isTime, avatar, name, phoneNumber, position, }) => (
-					<OfficialTimer
-						key={refereeId}
-						isTime={isTime}
-						avatar={avatar}
-						handleRegisterTimer={() => handleRegisterTimer(refereeId)}
-						name={name}
-						phoneNumber={phoneNumber}
-						position={position}
-					/>
-				))}
-			</ScrollView>
+			{isLoading ? (
+				<Loading />
+			) : (
+				<ScrollView>
+					{officials.map(({ id, isTime, avatar, name, phone, position, }) => (
+						<OfficialTimer
+							key={id}
+							id={id}
+							matchOfficialSelected={matchOfficialSelected}
+							isTime={isTime}
+							avatar={avatar}
+							handleRegisterTimer={() => handleRegisterTimer(id)}
+							name={name}
+							phoneNumber={phone}
+							position={position}
+							isLoading={isLoadingRegisterTime}
+						/>
+					))}
+				</ScrollView>
+			)}
 		</View>
 	)
 }

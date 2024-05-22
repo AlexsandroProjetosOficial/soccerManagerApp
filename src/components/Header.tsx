@@ -5,19 +5,22 @@ import Modal from "./Modal";
 import { useState } from "react";
 import SignOut from "./SignOut";
 import React from "react";
+import { useAuth } from "../context/AuthContext";
 
-export default function Header({ ...props }) {
+export default function Header() {
 	const [open, setOpen] = useState(false);
+
+	const { userData } = useAuth();
 
 	return (
 		<>
 			<Modal open={open} setOpen={setOpen}>
-				<SignOut setOpen={setOpen}/>
+				<SignOut setOpen={setOpen} />
 			</Modal>
 
 			<View className="w-full bg-green-400 flex-row h-30 px-7 pt-14 pb-5 items-center justify-between">
 				<TouchableOpacity onPress={() => setOpen(true)}>
-					<Avatar source={{ uri: "https://github.com/AlexsandroProjetosOficial.png" }} />
+					<Avatar width={14} height={14} uri={userData.avatar || ''} />
 				</TouchableOpacity>
 				<View className="flex-1 h-14 ml-6 flex-col gap-2">
 					<View className="flex-1 flex-row">

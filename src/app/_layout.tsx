@@ -16,8 +16,6 @@ export default function Layout() {
 		DigitalBold: require('../../assets/fonts/FontsFree-Net-DS-DIGIB-2.ttf')
 	});
 
-	console.log('fontsLoaded', fontsLoaded);
-
 	if (!fontsLoaded) {
 		return <Loading />
 	}

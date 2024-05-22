@@ -11,7 +11,6 @@ export interface ButtonProps extends React.ComponentPropsWithoutRef<typeof Touch
 
 const Button = forwardRef<React.ElementRef<typeof TouchableOpacity>, ButtonProps>(
 	({ label, bgColor, isPressed, ...props }, ref) => {
-		console.log(isPressed);
 		return (
 			<TouchableOpacity
 				className={clsx('flex-1 h-14 rounded-lg items-center justify-center', {
@@ -30,7 +29,11 @@ const Button = forwardRef<React.ElementRef<typeof TouchableOpacity>, ButtonProps
 						'text-red-100': bgColor === 'yellow'
 					})}
 				>
-					{isPressed ? <ActivityIndicator className="text-yellow-100" size='small' /> : label}
+					{isPressed ? <ActivityIndicator className={clsx('', {
+						'text-gray-100': bgColor === 'red',
+						'text-red-100': bgColor === 'yellow',
+						'text-yellow-100': bgColor === 'green',
+					})} size='small' /> : label}
 				</Text>
 			</TouchableOpacity>
 		)

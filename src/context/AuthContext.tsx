@@ -53,14 +53,10 @@ const AuthContextProvider = ({ children }: AuthProviderProps) => {
 				password: password
 			};
 
-			console.log('data', data);
-
 			const hasHardware = await LocalAuthentication.hasHardwareAsync();
 			const isEnrolled = await LocalAuthentication.isEnrolledAsync();
 
 			const { status, data: { error, message, data: { user } } } = await api.post('/system/login', data);
-
-			console.log('response', status, error, message, user);
 
 			if (status === 200 && !error) {
 				const useBio = await AsyncStorage.getItem("@useBio");
@@ -109,7 +105,6 @@ const AuthContextProvider = ({ children }: AuthProviderProps) => {
 
 			return;
 		} catch (error) {
-			console.log(error);
 			toast('Email ou senha inválido.', 'warning', 4000, 'top');
 			return;
 		}
@@ -123,7 +118,6 @@ const AuthContextProvider = ({ children }: AuthProviderProps) => {
 			router.push('/');
 			setIsUserLogged(false);
 		}
-		console.log('response', status, error, message);
 	}
 
 	return (

@@ -15,41 +15,43 @@ import Goals from "../../components/Goals";
 import CardDetails from "../../components/CardDetails";
 import GoalDetails from "../../components/GoalDetails";
 import SubstitutionsDetails from "../../components/SubstitutionsDetails";
+import { api } from "../../service/api";
+import { useToast } from "../../components/Toast";
+import moment from "moment";
+import Avatar from "../../components/Avatar";
 
 let initialTimer: NodeJS.Timeout | null = null;
 let ss = 0;
 let mm = 0;
 
 interface IClubs {
-	teamId: string;
-	name: string;
-	avatar: string;
-	score: number;
+	teamId: string | undefined;
+	avatar: string | null;
+	name: string | undefined;
 	cards: {
 		id: string;
-		type: 'yellow' | 'red';
+		type: string;
 		playerNumber: number;
 		period: string;
 		time: string;
-	}[] | [];
+	}[] | undefined,
 	goals: {
 		id: string;
 		playerNumber: number;
 		period: string;
 		time: string;
-	}[] | [];
+	}[] | undefined,
 	substitutions: {
 		id: string;
 		stop: string;
 		playerIn: number;
-		playerOut: number;
-		time: string;
+		playerOut: number | null;
 		period: string;
-	}[] | []
+		time: string;
+	}[] | undefined
 }
 
 interface IGame {
-	gameId: string;
 	home: IClubs;
 	away: IClubs;
 }
@@ -57,57 +59,181 @@ interface IGame {
 interface ITeam {
 	home: {
 		id: string;
-		avatar: string;
-	},
+		avatar: string | null;
+	};
 	away: {
 		id: string;
-		avatar: string;
+		avatar: string | null;
 	}
-}
+};
 
 interface IPlayerRegisteredCard {
 	teamId: string;
 	type: string;
 }
 
+interface IUpdateGame {
+	game: string | string[] | undefined;
+	column: string;
+	value: Date | number | string;
+	message: string;
+}
+
 export default function Game() {
 	const [open, setOpen] = useState(false);
+	const [isLoadingRegisterDetails, setIsLoadingRegisterDetails] = useState(false);
 	const [stopwatch, setStopwatch] = useState('00:00');
 	const [result, setResult] = useState('00:00');
 	const [color, setColor] = useState<'red' | 'green' | 'yellow'>('green');
 	const [type, setType] = useState<'cards' | 'goals' | 'substitutions' | 'increasedTime' | ''>('');
-	const [timeIncrease, setTimeIncrease] = useState(10);
+	const [timeIncrease, setTimeIncrease] = useState('');
 	const [gameSelected, setGameSelected] = useState<IGame | null>(null)
-	const [playerRegisterCard, setPlayerRegisterCard] = useState('')
-	const [team, setTeam] = useState<ITeam>({
-		home: {
-			id: '',
-			avatar: ''
-		},
-		away: {
-			id: '',
-			avatar: ''
-		}
-	});
+	const [playerRegisterCardOne, setPlayerRegisterCardOne] = useState('')
+	const [playerRegisterCardTwo, setPlayerRegisterCardTwo] = useState('')
+	const [stopSubstituition, setStopSubstituition] = useState('')
+	const [team, setTeam] = useState<ITeam>({} as ITeam);
+
 	const router = useRouter();
+	const { toast } = useToast();
 	const params = useLocalSearchParams();
+
 	const { game, half } = params;
 
-	const handleRegisterCard = async ({ teamId, type }: IPlayerRegisteredCard) => {
+	const handleRegisterDetails = async ({ teamId, type }: IPlayerRegisteredCard) => {
 		try {
-			console.log(playerRegisterCard, game, half, teamId, result, type);
-			setOpen(oldState => !oldState);
-			setPlayerRegisterCard('')
+			setIsLoadingRegisterDetails(oldState => !oldState);
+
+			if(type === 'substitution') {
+				const substitutions = gameSelected?.home.teamId === teamId ? gameSelected.home.substitutions : gameSelected?.away.substitutions;
+
+				const isPlayerRegisterCardOne = substitutions?.some(substitution => substitution.playerIn === Number(playerRegisterCardOne) || substitution.playerOut === Number(playerRegisterCardOne))
+				const isPlayerRegisterCardTwo = substitutions?.some(substitution => substitution.playerIn === Number(playerRegisterCardTwo) || substitution.playerOut === Number(playerRegisterCardTwo))
+
+				if(isPlayerRegisterCardOne || isPlayerRegisterCardTwo) {
+					setIsLoadingRegisterDetails(oldState => !oldState);
+
+					const message = isPlayerRegisterCardOne || isPlayerRegisterCardTwo ? 'Atletas já registrado nas substituições.' : '';
+
+					toast(message, 'error', 4000, 'top');
+
+					return;
+				}
+			}
+
+			const data = {
+				game,
+				team: teamId,
+				playerRegisterCardOne,
+				playerRegisterCardTwo,
+				half,
+				result,
+				type,
+				stop: stopSubstituition.toUpperCase()
+			};
+
+			const {
+				status,
+				data: {
+					error,
+					message,
+					data: {
+						datailsGame
+					}
+				}
+			} = await api.post('/game/details', data);
+
+			if (status === 201 && !error) {
+				setGameSelected(datailsGame);
+				setTeam({
+					home: {
+						id: datailsGame.home.teamId,
+						avatar: datailsGame.home.avatar
+					},
+					away: {
+						id: datailsGame.away.teamId,
+						avatar: datailsGame.away.avatar
+					}
+				})
+				toast(message, 'success', 4000, 'top');
+				setIsLoadingRegisterDetails(oldState => !oldState);
+			}
+
+			if (!['substitution'].includes(type)) setOpen(oldState => !oldState);
+
+			setPlayerRegisterCardOne('');
+			setPlayerRegisterCardTwo('');
 		} catch (error) {
-			console.log(error);
+			toast('Não foi possível encontrar os detalhes da partida.', 'error', 4000, 'top');
+		}
+	}
+
+	const handleUpdateGame = async ({ game, column, value, message }: IUpdateGame) => {
+		try {
+			setIsLoadingRegisterDetails(oldState => !oldState);
+
+			const time = ['additional_time_first_half', 'additional_time_second_half'].includes(column) ? String((Number(value) * 60 * 1000) + (0 * 1000)) : value;
+
+			const data = {
+				game,
+				column,
+				value: time
+			};
+
+			const {
+				status,
+				data: {
+					error
+				}
+			} = await api.patch('/game/game', data);
+
+			if (status === 201 && !error) {
+				toast(message, 'success', 4000, 'top');
+				setIsLoadingRegisterDetails(oldState => !oldState);
+				setOpen(oldState => !oldState);
+			}
+		} catch (error) {
+			toast('Não foi possível registrar horários.', 'error', 4000, 'top');
+			setIsLoadingRegisterDetails(oldState => !oldState);
 		}
 	}
 
 	const renderModal = {
-		cards: <Cards color={color} team={team} playerRegisterCard={playerRegisterCard} handleRegisterCard={handleRegisterCard} setPlayerRegisterCard={setPlayerRegisterCard} />,
-		goals: <Goals team={team} />,
-		substitutions: <PlayerSubstituitions team={team} />,
-		increasedTime: <IncreasedTime color={color} />,
+		cards: <Cards
+			isLoadingRegisterDetails={isLoadingRegisterDetails}
+			color={color}
+			team={team}
+			playerRegisterCardOne={playerRegisterCardOne}
+			handleRegisterDetails={handleRegisterDetails}
+			setPlayerRegisterCardOne={setPlayerRegisterCardOne}
+		/>,
+		goals: <Goals
+			isLoadingRegisterDetails={isLoadingRegisterDetails}
+			team={team}
+			playerRegisterCardOne={playerRegisterCardOne}
+			handleRegisterDetails={handleRegisterDetails}
+			setPlayerRegisterCardOne={setPlayerRegisterCardOne}
+		/>,
+		substitutions: <PlayerSubstituitions
+			isLoadingRegisterDetails={isLoadingRegisterDetails}
+			team={team}
+			playerRegisterCardOne={playerRegisterCardOne}
+			playerRegisterCardTwo={playerRegisterCardTwo}
+			handleRegisterDetails={handleRegisterDetails}
+			setPlayerRegisterCardOne={setPlayerRegisterCardOne}
+			setPlayerRegisterCardTwo={setPlayerRegisterCardTwo}
+			stopSubstituition={stopSubstituition}
+			setStopSubstituition={setStopSubstituition}
+			setOpen={setOpen}
+		/>,
+		increasedTime: <IncreasedTime
+			color={color}
+			isLoadingRegisterDetails={isLoadingRegisterDetails}
+			timeIncrease={timeIncrease}
+			setTimeIncrease={setTimeIncrease}
+			handleUpdateGame={handleUpdateGame}
+			game={game}
+			timeHalf={half}
+		/>,
 		'': ''
 	}
 
@@ -117,6 +243,7 @@ export default function Game() {
 			clearInterval(initialTimer);
 			initialTimer = null;
 		} else {
+			const matchTimeStart = moment().toDate();
 			// Start timer
 			initialTimer = setInterval(() => {
 				ss++;
@@ -131,15 +258,23 @@ export default function Game() {
 				}
 
 				let format = `${(mm < 10 ? `0${mm}` : mm)}:${(ss < 10 ? `0${ss}` : ss)}`;
-				console.log(format);
 
 				setStopwatch(format);
 			}, 1000);
+
+			handleUpdateGame({
+				game,
+				column: half === 'firstHalf' ? 'start_time_first_half' : 'start_time_second_half',
+				value: matchTimeStart,
+				message: 'Horário da partida registrado com sucesso.'
+			})
 		}
 	}
 
 	const endMatch = () => {
 		if (initialTimer !== null) {
+			const matchTimeEnd = moment().toDate();
+
 			clearInterval(initialTimer);
 			initialTimer = null;
 
@@ -148,102 +283,46 @@ export default function Game() {
 			ss = 0;
 			mm = 0;
 
+			handleUpdateGame({
+				game,
+				column: half === 'firstHalf' ? 'end_time_first_half' : 'end_time_second_half',
+				value: matchTimeEnd,
+				message: 'Horário da partida registrado com sucesso.'
+			})
+
 			router.push({ pathname: "/GameTimer", params: { game: game } })
 		}
 	}
 
 	const getGame = useCallback(async () => {
 		try {
-			const game: IGame = {
-				gameId: '3d25f9b8-8f74-4985-af1d-5b74482b1bb9',
-				home: {
-					teamId: 'f866952e-91fd-44fd-ab73-a07f0ad52b73',
-					avatar: 'https://federacaopr.com.br/wp-content/uploads/2023/12/cap.webp',
-					name: 'Athletico Paranaense',
-					score: 2,
-					cards: [
-						{
-							id: '16e86d0b-ce37-457a-909d-5daa5ee8153b',
-							type: 'yellow',
-							playerNumber: 10,
-							period: 'firstHalf',
-							time: '25:33'
-						}
-					],
-					goals: [
-						{
-							id: '08f1ff6f-1181-4da6-a9e9-8d01aea99021',
-							playerNumber: 10,
-							period: 'firstHalf',
-							time: '26:00'
-						},
-						{
-							id: '74709a8e-50c6-402d-a8c7-91af5232e57d',
-							playerNumber: 5,
-							period: 'firstHalf',
-							time: '40:22'
-						}
-					],
-					substitutions: [
-						{
-							id: '77200e29-b1a6-488e-b93f-1a11e7fd81a5',
-							stop: '1',
-							playerIn: 22,
-							playerOut: 8,
-							time: '22:44',
-							period: 'firstHalf'
-						},
-						{
-							id: '9bbbabc9-7562-4336-af1a-9c242340c753',
-							stop: '2',
-							playerIn: 17,
-							playerOut: 7,
-							time: '25:44',
-							period: 'firstHalf'
-						}
-					]
-				},
-				away: {
-					teamId: 'd907081a-3fc8-4cbd-9f3e-bad8abfd5579',
-					avatar: 'https://federacaopr.com.br/wp-content/uploads/2023/12/Coritiba.webp',
-					name: 'Coritiba SAF',
-					score: 0,
-					cards: [
-						{
-							id: '98e524b3-aa41-4a30-99b1-4a98e9083eb5',
-							type: 'yellow',
-							playerNumber: 10,
-							period: 'firstHalf',
-							time: '25:33'
-						}
-					],
-					goals: [],
-					substitutions: [
-						{
-							id: '7f657539-9489-45b2-bbb2-fd6a4786a562',
-							stop: '1',
-							playerIn: 22,
-							playerOut: 8,
-							time: '22:44',
-							period: 'firstHalf'
-						}
-					]
+			const {
+				status,
+				data: {
+					error,
+					message,
+					data: {
+						datailsGame
+					}
 				}
-			};
+			} = await api.get(`/game/details?game=${game}`);
 
-			setTeam({
-				home: {
-					id: game.home.teamId,
-					avatar: game.home.avatar
-				},
-				away: {
-					id: game.away.teamId,
-					avatar: game.away.avatar
-				}
-			})
-			setGameSelected(game)
+			if (status === 200 && !error) {
+				setGameSelected(datailsGame);
+				setTeam({
+					home: {
+						id: datailsGame.home.teamId,
+						avatar: datailsGame.home.avatar
+					},
+					away: {
+						id: datailsGame.away.teamId,
+						avatar: datailsGame.away.avatar
+					}
+				})
+				toast(message, 'success', 4000, 'top');
+			}
 		} catch (error) {
-			console.log(error);
+			toast('Não foi possível encontrar os detalhes da partida.', 'error', 4000, 'top');
 		}
 	}, [])
 
@@ -253,7 +332,7 @@ export default function Game() {
 
 	return (
 		<View className='w-full bg-green-200 flex-1 px-7'>
-			{timeIncrease > 0 ? (
+			{Number(timeIncrease) > 0 ? (
 				<View className="w-full flex-row justify-end absolute top-0 right-4">
 					<Text className="text-green-100 font-digitalBold text-6xl">+{timeIncrease}</Text>
 				</View>
@@ -285,11 +364,11 @@ export default function Game() {
 				) : ''}
 			</View>
 			<View className='w-full flex-row items-center justify-between mt-2 gap-4 p-2'>
-				<Image className="w-20 h-20 rounded-lg" source={{ uri: gameSelected?.home.avatar }} />
-				<Text className="text-gray-100 font-digitalBold text-5xl">{gameSelected?.home.score}</Text>
+				<Avatar width={20} height={20} uri={gameSelected?.home.avatar || ''} />
+				<Text className="text-gray-100 font-digitalBold text-5xl">{gameSelected?.home.goals?.length}</Text>
 				<Text className="text-yellow-100 font-digitalBold text-3xl">X</Text>
-				<Text className="text-gray-100 font-digitalBold text-5xl">{gameSelected?.away.score}</Text>
-				<Image className="w-20 h-20 rounded-lg" source={{ uri: gameSelected?.away.avatar }} />
+				<Text className="text-gray-100 font-digitalBold text-5xl">{gameSelected?.away.goals?.length}</Text>
+				<Avatar width={20} height={20} uri={gameSelected?.away.avatar || ''} />
 			</View>
 			<View className="w-full flex-row items-center justify-between mt-5 gap-4 p-2">
 				<TouchableOpacity onPress={() => { setOpen(true); setColor('yellow'); setType('cards'); setResult(stopwatch); }}>
@@ -310,20 +389,20 @@ export default function Game() {
 				<Text className="text-gray-100 font-rajdhaniBold text-base">Visitante</Text>
 			</View>
 			<ScrollView showsVerticalScrollIndicator={false}>
-				<View className="w-full flex-col items-center justify-between mt-1 gap-4 pb-20">
+				<View className="w-full flex-col items-center justify-between mt-1 gap-4 pb-5">
 					{/* cards */}
 					<View className="w-full flex-row justify-between">
 						{/* mandante */}
 						<View className="w-1/2 flex-col pr-4 border-r-2 border-green-100">
 							<View className="flex-col gap-2">
-								{gameSelected?.home.cards.map(game => <CardDetails playerNumber={game.playerNumber} time={game.time} period={game.period} type={game.type} key={game.id} />)}
+								{gameSelected?.home.cards?.map(game => <CardDetails playerNumber={game.playerNumber} time={game.time} period={game.period} type={game.type} key={game.id} />)}
 							</View>
 						</View>
 
 						{/* visitante */}
 						<View className="w-1/2 flex-col pl-4">
 							<View className="flex-col gap-2">
-								{gameSelected?.away.cards.map(game => <CardDetails playerNumber={game.playerNumber} time={game.time} period={game.period} type={game.type} key={game.id} />)}
+								{gameSelected?.away.cards?.map(game => <CardDetails playerNumber={game.playerNumber} time={game.time} period={game.period} type={game.type} key={game.id} />)}
 							</View>
 						</View>
 					</View>
@@ -333,13 +412,13 @@ export default function Game() {
 						{/* mandante */}
 						<View className="w-1/2 flex-col pr-4 border-r-2 border-green-100">
 							<View className="flex-col gap-2">
-								{gameSelected?.home.goals.map(game => <GoalDetails playerNumber={game.playerNumber} time={game.time} period={game.period} key={game.id} />)}
+								{gameSelected?.home.goals?.map(game => <GoalDetails playerNumber={game.playerNumber} time={game.time} period={game.period} key={game.id} />)}
 							</View>
 						</View>
 
 						{/* visitante */}
 						<View className="w-1/2 flex-col pl-4">
-							{gameSelected?.away.goals.map(game => <GoalDetails playerNumber={game.playerNumber} time={game.time} period={game.period} key={game.id} />)}
+							{gameSelected?.away.goals?.map(game => <GoalDetails playerNumber={game.playerNumber} time={game.time} period={game.period} key={game.id} />)}
 						</View>
 					</View>
 
@@ -348,14 +427,14 @@ export default function Game() {
 						{/* mandante */}
 						<View className="w-1/2 flex-col pr-4 border-r-2 border-green-100">
 							<View className="flex-col gap-2">
-								{gameSelected?.home.substitutions.map(game => <SubstitutionsDetails stop={game.stop} playerIn={game.playerIn} playerOut={game.playerOut} time={game.time} period={game.period} key={game.id} />)}
+								{gameSelected?.home.substitutions?.map(game => <SubstitutionsDetails stop={game.stop} playerIn={game.playerIn} playerOut={game.playerOut!} time={game.time} period={game.period} key={game.id} />)}
 							</View>
 						</View>
 
 						{/* visitante */}
 						<View className="w-1/2 flex-col pl-4">
 							<View className="flex-col gap-2">
-								{gameSelected?.away.substitutions.map(game => <SubstitutionsDetails stop={game.stop} playerIn={game.playerIn} playerOut={game.playerOut} time={game.time} period={game.period} key={game.id} />)}
+								{gameSelected?.away.substitutions?.map(game => <SubstitutionsDetails stop={game.stop} playerIn={game.playerIn} playerOut={game.playerOut!} time={game.time} period={game.period} key={game.id} />)}
 							</View>
 						</View>
 					</View>

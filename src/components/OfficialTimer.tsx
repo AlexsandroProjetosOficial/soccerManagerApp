@@ -1,18 +1,22 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { Image, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { colors } from "../styles/colors";
 import { Link } from "expo-router";
 import ButtonTimer from "./ButtonTimer";
 import ButtonTimerCheck from "./ButtonTimerCheck";
 import React from 'react';
+import Avatar from "./Avatar";
 
 interface IOfficialTimer {
 	isTime: boolean;
-	avatar: string;
+	id: string;
+	matchOfficialSelected: string;
+	avatar: string | null;
 	name: string;
 	position: string;
 	phoneNumber: string;
 	handleRegisterTimer: () => void;
+	isLoading: boolean;
 }
 
 export default function OfficialTimer({
@@ -21,11 +25,14 @@ export default function OfficialTimer({
 	name,
 	position,
 	phoneNumber,
-	handleRegisterTimer
+	handleRegisterTimer,
+	isLoading,
+	id,
+	matchOfficialSelected
 }: IOfficialTimer) {
 	return (
 		<View className="flex-row h-auto mt-10 justify-between items-center">
-			<Image className="w-16 h-16 rounded-lg" source={{ uri: avatar }} />
+			<Avatar width={16} height={16} uri={avatar || ''} />
 			<View className="w-full flex-1 ml-4 flex-row justify-between items-center border-b-2 border-green-100 pb-2">
 				<View className="flex-col">
 					<Text className="text-gray-100 font-rajdhaniBold text-lg">{name}</Text>
@@ -40,7 +47,12 @@ export default function OfficialTimer({
 				{isTime ? (
 					<ButtonTimerCheck />
 				) : (
-					<ButtonTimer onPress={handleRegisterTimer}/>
+					<ButtonTimer
+						onPress={handleRegisterTimer}
+						isLoading={isLoading}
+						id={id}
+						idSelected={matchOfficialSelected}
+					/>
 				)}
 			</View>
 		</View>

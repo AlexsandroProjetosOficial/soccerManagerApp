@@ -1,4 +1,4 @@
-import { Redirect, Stack } from "expo-router";
+import { Stack } from "expo-router";
 import Header from "../../components/Header";
 import { colors } from "../../styles/colors";
 import HeaderPages from "../../components/HeaderPages";
@@ -21,9 +21,9 @@ export default function StackLayout() {
 				options={{
 					statusBarColor: '#061C06',
 					navigationBarColor: colors.green[400],
-					header: (props) => {
+					header: (_props) => {
 						return (
-							<Header {...props} />
+							<Header />
 						)
 					}
 				}}
@@ -45,6 +45,18 @@ export default function StackLayout() {
 				options={{
 					statusBarColor: '#061C06',
 					headerTitle: 'O jogo - registro tempo',
+					header: (props) => {
+						return (
+							<HeaderPages {...props} />
+						)
+					}
+				}}
+			/>
+			<Stack.Screen
+				name="Summary"
+				options={{
+					statusBarColor: '#061C06',
+					headerTitle: 'A Sumula',
 					header: (props) => {
 						return (
 							<HeaderPages {...props} />
