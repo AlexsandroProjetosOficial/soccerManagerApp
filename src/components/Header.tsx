@@ -18,7 +18,7 @@ export default function Header() {
 				<SignOut setOpen={setOpen} />
 			</Modal>
 
-			<View className="w-full bg-green-400 flex-row h-30 px-7 pt-14 pb-5 items-center justify-between">
+			<View className="w-full bg-green-400 flex-row h-30 px-7 pt-7 pb-5 items-center justify-between">
 				<TouchableOpacity onPress={() => setOpen(true)}>
 					<Avatar width={14} height={14} uri={userData.avatar || ''} />
 				</TouchableOpacity>

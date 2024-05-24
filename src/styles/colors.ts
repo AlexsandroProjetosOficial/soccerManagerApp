@@ -31,6 +31,10 @@ const colors = {
 	yellow: {
 		100: '#FAFF00'
 	},
+
+	blue: {
+		100: '#0E1647'
+	},
 };
 
 export { colors };

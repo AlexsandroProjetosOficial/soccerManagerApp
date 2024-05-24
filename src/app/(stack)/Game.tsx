@@ -103,13 +103,13 @@ export default function Game() {
 		try {
 			setIsLoadingRegisterDetails(oldState => !oldState);
 
-			if(type === 'substitution') {
+			if (type === 'substitution') {
 				const substitutions = gameSelected?.home.teamId === teamId ? gameSelected.home.substitutions : gameSelected?.away.substitutions;
 
 				const isPlayerRegisterCardOne = substitutions?.some(substitution => substitution.playerIn === Number(playerRegisterCardOne) || substitution.playerOut === Number(playerRegisterCardOne))
 				const isPlayerRegisterCardTwo = substitutions?.some(substitution => substitution.playerIn === Number(playerRegisterCardTwo) || substitution.playerOut === Number(playerRegisterCardTwo))
 
-				if(isPlayerRegisterCardOne || isPlayerRegisterCardTwo) {
+				if (isPlayerRegisterCardOne || isPlayerRegisterCardTwo) {
 					setIsLoadingRegisterDetails(oldState => !oldState);
 
 					const message = isPlayerRegisterCardOne || isPlayerRegisterCardTwo ? 'Atletas já registrado nas substituições.' : '';
@@ -381,7 +381,10 @@ export default function Game() {
 					<MaterialIcons name="sports-soccer" size={50} color={colors.green[100]} />
 				</TouchableOpacity>
 				<TouchableOpacity onPress={() => { setOpen(true); setColor('green'); setType('substitutions'); setResult(stopwatch); }}>
-					<MaterialIcons name="swap-vert" size={50} color={colors.green[100]} />
+					<View className="flex-row items-center">
+						<MaterialIcons name="north" size={50} color={colors.green[100]} />
+						<MaterialIcons name="south" size={50} color={colors.red[100]} style={{ marginLeft: -30 }} />
+					</View>
 				</TouchableOpacity>
 			</View>
 			<View className="w-full flex-row items-center justify-between mt-10 gap-4 py-2 border-b-2 border-t-2 border-green-100">
