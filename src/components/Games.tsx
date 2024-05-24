@@ -25,49 +25,54 @@ export default function Games({ item: { id, league, avatar, teams, category, dat
 	const router = useRouter();
 
 	return (
-		<View className="w-full h-auto py-1 flex-1 flex-row items-center">
-			<Avatar width={16} height={16} uri={avatar || ''} />
-			<View className="py-4 gap-2 w-full flex-1 flex-col ml-4 border-b-2 border-green-100">
-				<View className="flex-row flex-1 items-center">
-					<Text className="text-gray-100 font-rajdhaniBold text-base">{league}</Text>
-				</View>
-				<View className="flex-row flex-1 items-center justify-between">
-					<Text className="text-gray-100 font-rajdhaniBold text-lg">{teams}</Text>
-					<Text className="text-gray-200 font-rajdhaniBold text-sm">{category}</Text>
-				</View>
-				<View className="flex-row flex-1 items-center justify-between">
+		<View className="w-full h-auto py-1 flex-1 flex-col items-center">
+			<View className="w-full h-auto py-1 flex-1 flex-row items-center">
+				<Avatar width={16} height={16} uri={avatar || ''} />
+				<View className="py-4 gap-2 w-full flex-1 ml-6 flex-col">
 					<View className="flex-row flex-1 items-center">
-						<MaterialIcons name="calendar-today" color={colors.gray[100]} />
-						<Text className="text-gray-100 font-rajdhaniMedium text-sm ml-2">
-							{date}
-						</Text>
+						<Text className="text-gray-100 font-rajdhaniBold text-base">{league}</Text>
 					</View>
-					<Text className="text-gray-200 font-rajdhaniRegular text-sm">{location}</Text>
+					<View className="flex-row flex-1 items-center justify-between">
+						<Text className="text-gray-100 font-rajdhaniBold text-lg">{teams}</Text>
+						<Text className="text-gray-200 font-rajdhaniBold text-sm">{category}</Text>
+					</View>
+					<View className="flex-row flex-1 items-center justify-between">
+						<View className="flex-row flex-1 items-center">
+							<MaterialIcons name="calendar-today" color={colors.gray[100]} />
+							<Text className="text-gray-100 font-rajdhaniMedium text-sm ml-2">
+								{date}
+							</Text>
+						</View>
+						<Text className="text-gray-200 font-rajdhaniRegular text-sm">{location}</Text>
+					</View>
 				</View>
-				<View className="flex-row flex-1 gap-3 items-center justify-between">
-					<ButtonGames
-						label="Horario"
-						onPress={() => router.push({ pathname: "/Timer", params: { game: id } })}
-						disabled={isAllArrived}
-						isAllArrived={isAllArrived}
-					/>
-					<ButtonGames
-						label="Jogo"
-						onPress={() => router.push({ pathname: "/GameTimer", params: { game: id } })}
-						disabled={status === 'Concluído' ? true : false}
-						completed={status === 'Concluído' ? true : false}
-					/>
-					<ButtonGames
-						label="RDJ"
-					/>
-					<ButtonGames
-						label="Sumula"
-						onPress={() => router.push({ pathname: "/Summary", params: { game: id } })}
-					/>
-					<ButtonGames
-						label="Mais"
-					/>
-				</View>
+			</View>
+			<View className="flex-row gap-3 items-center justify-between border-b-2 border-green-100 pb-4">
+				<ButtonGames
+					label="Horario"
+					onPress={() => router.push({ pathname: "/Timer", params: { game: id } })}
+					disabled={isAllArrived}
+					isAllArrived={isAllArrived}
+				/>
+				<ButtonGames
+					label="Jogo"
+					onPress={() => router.push({ pathname: "/GameTimer", params: { game: id } })}
+					disabled={status === 'Concluído' ? true : false}
+					completed={status === 'Concluído' ? true : false}
+				/>
+				<ButtonGames
+					label="Pênaltis"
+				/>
+				<ButtonGames
+					label="RDJ"
+				/>
+				<ButtonGames
+					label="Sumula"
+					onPress={() => router.push({ pathname: "/Summary", params: { game: id } })}
+				/>
+				<ButtonGames
+					label="Mais"
+				/>
 			</View>
 		</View>
 	)
